@@ -54,5 +54,5 @@ repo); the client bundle keeps the module-table externals contract.
 ## Uninstall
 
 ```sh
-dsh plugin --profile web remove @deepseek-ai/dsh-client-ui-conversation-folded
+dsh plugin --profile web remove @khalilhsu/dsh-ui-conversation-folded
 ```

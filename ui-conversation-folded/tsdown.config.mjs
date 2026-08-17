@@ -16,9 +16,14 @@ import { existsSync } from 'node:fs'
 import { basename, dirname, resolve as resolvePath } from 'node:path'
 
 const require = createRequire(import.meta.url)
-const { transform } = require('/Users/bytedance/Desktop/DSH/node_modules/lightningcss')
+let transform
+try {
+  ({ transform } = require('lightningcss'))
+} catch {
+  ({ transform } = require('/Users/khalil/Desktop/DSH/node_modules/lightningcss'))
+}
 
-const PACKAGE_ID = '@deepseek-ai/dsh-client-ui-conversation-folded'
+const PACKAGE_ID = '@khalilhsu/dsh-ui-conversation-folded'
 
 /** Platform seed entries + the runtime exemption (packages/client/web/src/platform.ts). */
 const CLIENT_EXTERNALS = [

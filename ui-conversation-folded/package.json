@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-conversation-folded",
+  "name": "@khalilhsu/dsh-ui-conversation-folded",
   "description": "Fork of the conversation domain with per-turn folding: each round's assistant activity (CoT + tool calls) is bounded to a max-height scroll container with collapse and streaming auto-scroll. UI-only.",
   "version": "0.1.0",
   "type": "module",

@@ -7,4 +7,4 @@
 
 - insert:
     - id: ui-conversation-folded
-      name: '@deepseek-ai/dsh-client-ui-conversation-folded'
+      name: '@khalilhsu/dsh-ui-conversation-folded'

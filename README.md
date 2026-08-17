@@ -8,7 +8,7 @@ Harness checkout stays untouched.
 
 | Directory | Package | Status | What it does |
 |---|---|---|---|
-| `ui-conversation-folded/` | `@deepseek-ai/dsh-client-ui-conversation-folded` | **current** | Replaces the chat view with per-turn folding: each round's intermediate attempts (thinking, tool calls, in-between narration) live in a bounded, collapsible 288px scroller; the turn's final summary text, and the tail row (copy / like-dislike / timing) stay outside, fully visible. Streaming-aware: auto-scroll + bottom/top fade while generating, auto-collapse when the closing message starts, full-height expand once the turn is done. |
+| `ui-conversation-folded/` | `@khalilhsu/dsh-ui-conversation-folded` | **current** | Replaces the chat view with per-turn folding: each round's intermediate attempts (thinking, tool calls, in-between narration) live in a bounded, collapsible 288px scroller; the turn's final summary text, and the tail row (copy / like-dislike / timing) stay outside, fully visible. Streaming-aware: auto-scroll + bottom/top fade while generating, auto-collapse when the closing message starts, full-height expand once the turn is done. |
 | `cot-fold/` | `@deepseek-ai/dsh-client-ui-cot-fold` | archived | Early experiment: capped/collapsed reasoning ("Think") rows only. Superseded by `ui-conversation-folded`. Kept for history. |
 
 ## Why a fork (replacement), not an additive plugin
@@ -22,7 +22,9 @@ which registers the same conversation slots with the folding `ChatView`.
 
 ```sh
 # from a DeepSeek Harness checkout whose `dsh` CLI is built:
-dsh plugin --profile web add /path/to/dsh-plugins/ui-conversation-folded
+dsh plugin --profile web add @khalilhsu/dsh-ui-conversation-folded
+# or from local directory:
+# dsh plugin --profile web add /path/to/dsh-plugins/ui-conversation-folded
 # restart `dsh web`, then refresh the browser
 ```
 
@@ -30,7 +32,7 @@ The patch (`patch.yml`) disables `ui-conversation` and inserts the fork under
 entry id `ui-conversation-folded`. Uninstall:
 
 ```sh
-dsh plugin --profile web remove @deepseek-ai/dsh-client-ui-conversation-folded
+dsh plugin --profile web remove @khalilhsu/dsh-ui-conversation-folded
 ```
 
 ## Build
