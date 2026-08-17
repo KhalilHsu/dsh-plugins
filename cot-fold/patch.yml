@@ -1,0 +1,6 @@
+# Applied as a profile patch layer: inserts the cot-fold client plugin row
+# into the host composition so the Loader scans it for `dsh.client` and the
+# modules node half serves its browser bundle at /plugins/<id>/client.js.
+- insert:
+    - id: ui-cot-fold
+      name: '@deepseek-ai/dsh-client-ui-cot-fold'

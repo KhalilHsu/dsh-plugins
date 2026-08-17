@@ -1,0 +1,10 @@
+# Replaces the shipped chat (ui-conversation) with the folded fork: disable
+# the base row (it must not load, or its slot registrations would collide with
+# the fork's) and insert the fork under its own entry id. The fork's browser
+# bundle registers the same conversation slots and node renderers.
+- id: ui-conversation
+  disabled: true
+
+- insert:
+    - id: ui-conversation-folded
+      name: '@deepseek-ai/dsh-client-ui-conversation-folded'

@@ -1,0 +1,40 @@
+{
+  "name": "@deepseek-ai/dsh-client-ui-conversation-folded",
+  "description": "Fork of the conversation domain with per-turn folding: each round's assistant activity (CoT + tool calls) is bounded to a max-height scroll container with collapse and streaming auto-scroll. UI-only.",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./invariant": "./lib/invariant.js",
+    "./client": "./lib/client.js",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown --config tsdown.config.mjs",
+    "watch": "tsdown --config tsdown.config.mjs --watch"
+  },
+  "files": [
+    "lib",
+    "patch.yml",
+    "README.md"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@deepseek-ai/dsh-client-ui-cot-fold",
+  "description": "UI-only plugin: cap assistant reasoning (CoT / Think rows) at a max height and add a collapse affordance.",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "files": [
+    "lib",
+    "patch.yml",
+    "README.md"
+  ],
+  "license": "MIT"
+}

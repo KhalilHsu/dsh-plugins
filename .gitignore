@@ -1,0 +1,14 @@
+# ── dependencies ────────────────────────────────────────────────
+# node_modules here are workspace links / symlinks into the DeepSeek Harness
+# checkout; they must never be committed.
+node_modules/
+
+# ── build output ─────────────────────────────────────────────────
+# Both packages rebuild `lib/` from `src/` via tsdown (see README).
+lib/
+*.tsbuildinfo
+
+# ── local / OS noise ─────────────────────────────────────────────
+.DS_Store
+*.log
+node_modules
