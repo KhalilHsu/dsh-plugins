@@ -1,70 +1,74 @@
 # DSH Plugins
 
-UI-only plugins for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-Web GUI. Installed through the standard profile-plugin mechanism; the official
-Harness checkout stays untouched.
+[![npm version](https://img.shields.io/npm/v/@khalilhsu/dsh-ui-conversation-folded.svg)](https://www.npmjs.com/package/@khalilhsu/dsh-ui-conversation-folded)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Packages
+UI-only plugins for [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) Web GUI. Installed cleanly through the official Profile-Plugin mechanism (`dsh plugin`) without modifying upstream Harness source code.
+
+---
+
+## 📦 Packages
 
 | Directory | Package | Status | What it does |
 |---|---|---|---|
-| `ui-conversation-folded/` | `@khalilhsu/dsh-ui-conversation-folded` | **current** | Replaces the chat view with per-turn folding: each round's intermediate attempts (thinking, tool calls, in-between narration) live in a bounded, collapsible 288px scroller; the turn's final summary text, and the tail row (copy / like-dislike / timing) stay outside, fully visible. Streaming-aware: auto-scroll + bottom/top fade while generating, auto-collapse when the closing message starts, full-height expand once the turn is done. |
-| `cot-fold/` | `@deepseek-ai/dsh-client-ui-cot-fold` | archived | Early experiment: capped/collapsed reasoning ("Think") rows only. Superseded by `ui-conversation-folded`. Kept for history. |
+| [`ui-conversation-folded/`](./ui-conversation-folded) | [`@khalilhsu/dsh-ui-conversation-folded`](https://www.npmjs.com/package/@khalilhsu/dsh-ui-conversation-folded) | **Active** | **Per-turn folding for chat**: Each round's intermediate activity (thinking / CoT, tool calls, in-between narration) is neatly folded into a bounded 288px scroller. Final conclusion text and turn metrics stay outside and visible. Supports streaming auto-scroll, auto-collapse on summary, and global toggle. |
+| `cot-fold/` | `@deepseek-ai/dsh-client-ui-cot-fold` | Archived | Early experiment: capped/collapsed reasoning ("Think") rows only. Superseded by `ui-conversation-folded`. |
 
-## Why a fork (replacement), not an additive plugin
+---
 
-The fold must regroup the chat flow's React-rendered rows, which no slot
-extension point exposes. The shipped chat (`ui-conversation`) is therefore
-replaced: the profile patch disables the original row and inserts this fork,
-which registers the same conversation slots with the folding `ChatView`.
+## 🚀 Quick Start (Install & Uninstall)
 
-## Install
+### Install via npm (Recommended)
+
+Run from your DeepSeek Harness environment:
 
 ```sh
-# from a DeepSeek Harness checkout whose `dsh` CLI is built:
+# 1. Add the plugin to your web profile
 dsh plugin --profile web add @khalilhsu/dsh-ui-conversation-folded
-# or from local directory:
-# dsh plugin --profile web add /path/to/dsh-plugins/ui-conversation-folded
-# restart `dsh web`, then refresh the browser
+
+# 2. Restart `dsh web`, then refresh your browser
+dsh web
 ```
 
-The patch (`patch.yml`) disables `ui-conversation` and inserts the fork under
-entry id `ui-conversation-folded`. Uninstall:
+### Uninstall
 
 ```sh
 dsh plugin --profile web remove @khalilhsu/dsh-ui-conversation-folded
 ```
 
-## Build
+---
 
-Each package needs the Harness checkout's toolchain (`tsdown`) and its
-node_modules (the package `node_modules` is a workspace link into the checkout
-— see the build config's comments).
+## 💡 Key Features (`ui-conversation-folded`)
+
+- **Bounded Height Frame**: Intermediate thought processes and tool calls are capped at `288px` (configurable via `--cot-fold-max-height`) with internal scroll.
+- **Collapsible Summary Bar**: Each turn displays an expandable summary bar with `Duration · Tool count · Thinking blocks`.
+- **Streaming-Aware Follow**: Auto-scrolls to the newest tokens/tool outputs while generating. Pauses when scrolling up; resumes when back at the bottom.
+- **Auto Collapse on Completion**: Gracefully auto-collapses intermediate reasoning once the final answer begins streaming.
+- **Global Header Toggle**: Persistent on/off toggle button (`思考折叠` / `思考展开`) in the session header (persisted in `localStorage`).
+- **Zero Loss of Interaction**: All child interactions (inspect tool output, expand individual tools, markdown copying) remain 100% functional.
+
+---
+
+## 🛠️ Local Development & Build
+
+If you want to build or modify the plugin locally from source:
 
 ```sh
-cd ui-conversation-folded
-/Users/<you>/path/to/deepseek-harness/node_modules/.bin/tsdown --config tsdown.config.mjs
-```
-
-`lib/` is git-ignored; rebuild it after cloning on a new machine.
-
-## Development on a new machine
-
-```sh
-git clone git@github.com:<you>/dsh-plugins.git
+git clone https://github.com/KhalilHsu/dsh-plugins.git
 cd dsh-plugins/ui-conversation-folded
-# point node_modules at the Harness checkout (see tsdown.config.mjs):
+
+# Symlink node_modules to your local deepseek-harness checkout
 ln -s /path/to/deepseek-harness/packages/client/ui-conversation/node_modules node_modules
-# build, then install into the profile as above
+
+# Build the client & node bundles
+npm run bundle
+
+# Install locally into your profile
+dsh plugin --profile web add /path/to/dsh-plugins/ui-conversation-folded
 ```
 
-## Layout notes
+---
 
-- `ui-conversation-folded/src/client/chat/ChatView.tsx` — turn segmentation
-  (plain rows vs fold units vs the closing summary), turn-tail boundaries,
-  closing-based summary extraction, per-portion timing.
-- `ui-conversation-folded/src/client/chat/TurnFold.tsx` — the fold component:
-  clickable summary bar (duration · tool calls · thinking), full-width
-  divider, phase-aware height (288px while generating, full when done),
-  auto-scroll, bottom/top fades, auto-collapse on the final message.
-- `ui-conversation-folded/patch.yml` — the replacement patch.
+## License
+
+[MIT](LICENSE)
