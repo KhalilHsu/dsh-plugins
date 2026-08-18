@@ -13,11 +13,11 @@
 // lifecycle updates replace only their own row without remounting it.
 
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import type { ConversationTimelineSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ConversationTimelineSnapshot, ToolCallBlock } from '@deepseek-ai/dsh-client-runtime/client'
 import type { AssistantBlock } from '@deepseek-ai/dsh-client-runtime/client'
 import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
-import type { AssistantChatData, TurnTailChatData } from '../contract/chat-nodes.ts'
+import type { AssistantChatData, ToolChatData, TurnTailChatData } from '../contract/chat-nodes.ts'
 import { PendingSteeringBubble } from './MessageItem.tsx'
 import { ChatNodeSeat } from './ChatNodeSeat.tsx'
 import { AssistantMarkdown } from './AssistantMarkdown.tsx'
@@ -32,6 +32,23 @@ const FOLLOW_THRESHOLD = 24
  *  The turn-tail stays OUTSIDE: it carries copy / like-dislike / timing and
  *  must never be hidden by the fold. */
 const FOLD_KINDS = new Set(['assistant-step', 'tool-call'])
+
+/** Ask-user-question rows stay OUTSIDE the fold, like the turn-tail: while a
+ *  question is pending the "提问·等待回答" row must stay visible (a collapsed
+ *  fold would unmount it), and the answered row is an interaction, not
+ *  process. They therefore flush the fold as boundaries. */
+function isAskQuestionRoot(root: ToolCallBlock | undefined): boolean {
+  if (root === undefined) return false
+  return 'kind' in root ? root.call?.name === 'ask_user_question' : root.name === 'ask_user_question'
+}
+
+/** Boundary timestamp for a flush: turn-tail / steering / user carry
+ *  `data.time`; tool-call boundaries (ask rows) carry it on the root block. */
+function boundaryTimeOf(boundaryNode: { kind: string; data: unknown } | undefined): number | undefined {
+  if (boundaryNode === undefined) return undefined
+  if (boundaryNode.kind === 'tool-call') return (boundaryNode.data as ToolChatData).root?.time
+  return (boundaryNode.data as { time?: number } | undefined)?.time
+}
 
 /** One ordered render slot: a plain row, a foldable turn unit, or the turn's
  *  closing summary (text blocks only; its reasoning lives in the fold). */
@@ -272,9 +289,7 @@ export function ChatView({
           : undefined
         const startTime = pending.startTime ?? turnMeta?.start?.time ?? firstNodeTime
         pending.startTime = startTime
-        const boundaryTime = boundaryNode?.kind === 'turn-tail'
-          ? (boundaryNode.data as TurnTailChatData).time
-          : (boundaryNode?.data as { time?: number } | undefined)?.time
+        const boundaryTime = boundaryTimeOf(boundaryNode)
         if (startTime !== undefined && boundaryTime !== undefined) {
           pending.runMs = Math.max(0, boundaryTime - startTime)
         } else if (turnMeta?.start !== undefined && turnMeta.end !== undefined) {
@@ -326,13 +341,19 @@ export function ChatView({
       pending = null
     }
     for (const nodeKey of order) {
-      const kind = nodeStore.get(nodeKey)?.kind
-      if (kind !== undefined && FOLD_KINDS.has(kind)) {
+      const node = nodeStore.get(nodeKey)
+      const kind = node?.kind
+      // Ask-user-question rows are boundaries (like the turn-tail): they flush
+      // the fold and render as plain rows, so a pending question is never
+      // buried (or unmounted) inside a collapsed fold.
+      const isAskRow = kind === 'tool-call'
+        && isAskQuestionRoot((node.data as ToolChatData).root)
+      if (!isAskRow && kind !== undefined && FOLD_KINDS.has(kind)) {
         if (pending === null) {
           pending = {
             key: nodeKey, foldKeys: [], running: false, toolCount: 0, thinkCount: 0,
-            // A fold split by an earlier steering/user boundary starts its own
-            // portion of the turn there.
+            // A fold split by an earlier steering/user/ask boundary starts its
+            // own portion of the turn there.
             ...lastBoundaryTime === undefined ? {} : { startTime: lastBoundaryTime },
           }
         }
@@ -347,13 +368,14 @@ export function ChatView({
           }
         }
       } else {
-        // Every boundary (turn-tail, steering, user) flushes the fold — it
-        // stays OUTSIDE the fold (turn-tail carries copy / like-dislike /
-        // timing; steering/user are the reader's own words). The boundary
-        // node is passed so the fold can measure its own portion.
+        // Every boundary (turn-tail, steering, user, ask row) flushes the
+        // fold — it stays OUTSIDE the fold (turn-tail carries copy /
+        // like-dislike / timing; steering/user are the reader's own words; an
+        // ask row must stay visible while the question is pending). The
+        // boundary node is passed so the fold can measure its own portion.
         const boundaryNode = nodeStore.get(nodeKey)
         flush(boundaryNode)
-        lastBoundaryTime = (boundaryNode?.data as { time?: number } | undefined)?.time
+        lastBoundaryTime = boundaryTimeOf(boundaryNode)
         slots.push({ type: 'plain', key: nodeKey })
       }
     }

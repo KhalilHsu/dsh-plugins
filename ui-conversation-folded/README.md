@@ -35,6 +35,7 @@ dsh plugin --profile web remove @khalilhsu/dsh-ui-conversation-folded
 | **Fold & Unfold** | Slim clickable bar with 收起 / 展开 showing `N tool calls · M thinking · duration`. |
 | **Streaming Auto-Scroll** | Follows the newest tokens/tool outputs while running; scrolling up pauses follow, returning to bottom resumes it. |
 | **Auto-Collapse on Final** | Automatically collapses the fold once the final closing response begins streaming. |
+| **Questions Stay Visible** | `ask_user_question` rows are treated like the turn-tail: they render OUTSIDE the fold, so a pending "提问·等待回答" row is never hidden (or unmounted) by a collapsed fold. |
 | **Session Toggle** | Header button (`思考折叠` / `思考展开`) turns the fold behavior on/off globally, saved in `localStorage`. |
 | **Full Interaction Preserved** | Inspecting tool calls, per-tool expansion, code copying, and markdown features work unchanged. |
 
