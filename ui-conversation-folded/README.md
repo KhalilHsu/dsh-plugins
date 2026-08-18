@@ -65,6 +65,10 @@ src/client/chat/
 ln -s /path/to/deepseek-harness/packages/client/ui-conversation/node_modules node_modules
 
 # 2. Build client & host bundles
+#    lightningcss is resolved dynamically (no hardcoded machine path): the
+#    symlink above points into the checkout, so `npm run bundle` works as-is;
+#    alternatively set DSH_ROOT=/path/to/deepseek-harness or run tsdown from
+#    inside the checkout.
 npm run bundle
 
 # 3. Add local package to profile

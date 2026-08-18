@@ -12,15 +12,57 @@
 
 import { createRequire } from 'node:module'
 import { readFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
-import { basename, dirname, resolve as resolvePath } from 'node:path'
+import { existsSync, realpathSync } from 'node:fs'
+import { basename, dirname, join, resolve as resolvePath } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const require = createRequire(import.meta.url)
+
+/**
+ * Resolve lightningcss from whichever DSH checkout is on disk, without
+ * hardcoding a machine-specific absolute path. Order:
+ *   1. normal node resolution (works when this config sits inside a DSH
+ *      checkout, or the local node_modules chain provides the package);
+ *   2. $DSH_ROOT/node_modules (explicit knob for standalone builds);
+ *   3. the realpath of this directory's node_modules symlink (points into
+ *      the DSH checkout per the README setup), walking up from there;
+ *   4. walk up from cwd (tsdown invoked from inside the DSH checkout);
+ *   5. walk up from this config file's directory.
+ */
+function findLightningcssRoot() {
+  const starts = []
+  if (process.env.DSH_ROOT) starts.push(resolvePath(process.env.DSH_ROOT))
+  const here = dirname(fileURLToPath(import.meta.url))
+  try {
+    starts.push(realpathSync(join(here, 'node_modules')))
+  } catch {
+    // symlink not present (fresh clone) — skip
+  }
+  starts.push(process.cwd(), here)
+  for (const start of starts) {
+    let dir = start
+    for (;;) {
+      if (existsSync(join(dir, 'node_modules', 'lightningcss'))) return dir
+      const parent = dirname(dir)
+      if (parent === dir) break
+      dir = parent
+    }
+  }
+  return null
+}
+
 let transform
 try {
-  ({ transform } = require('lightningcss'))
+  ;({ transform } = require('lightningcss'))
 } catch {
-  ({ transform } = require('/Users/khalil/Desktop/DSH/node_modules/lightningcss'))
+  const root = findLightningcssRoot()
+  if (root === null) {
+    throw new Error(
+      'lightningcss not found. Run tsdown from inside the DSH checkout, ' +
+        'or set DSH_ROOT=/path/to/DSH, or install lightningcss next to this config.',
+    )
+  }
+  ;({ transform } = createRequire(join(root, 'noop.cjs'))('lightningcss'))
 }
 
 const PACKAGE_ID = '@khalilhsu/dsh-ui-conversation-folded'
