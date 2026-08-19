@@ -1,0 +1,35 @@
+{
+  "name": "@khalilhsu/dsh-ui-query-navigator",
+  "description": "DSH web UI plugin that adds a Codex-style multi-turn query navigator without changing conversation or session data.",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@khalilhsu/dsh-ui-conversation-folded"
+      ]
+    }
+  },
+  "scripts": {
+    "bundle": "../../DSH/node_modules/.bin/tsdown --config tsdown.config.mjs",
+    "test": "../../DSH/node_modules/.bin/tsx --test tests/*.test.ts",
+    "typecheck": "../../DSH/node_modules/.bin/tsc -p tsconfig.json"
+  },
+  "files": [
+    "lib",
+    "patch.yml",
+    "README.md"
+  ],
+  "license": "MIT"
+}

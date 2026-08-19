@@ -1,0 +1,6 @@
+# Adds an independent browser contribution. It waits for the conversation
+# input-dock declaration and renders its visual surface through a body portal;
+# it does not replace ui-conversation or ui-conversation-folded.
+- insert:
+    - id: ui-query-navigator
+      name: '@khalilhsu/dsh-ui-query-navigator'
