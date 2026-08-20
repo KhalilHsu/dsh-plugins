@@ -14,7 +14,7 @@ An independent DSH web UI plugin that adds a Codex-style left query rail to mult
 
 The plugin contributes through DSH's declared `conversation.input.dock` slot and portals only its visual overlay. It reads the session's already-materialized chat snapshot plus the stable `data-chat-*` DOM anchors. It does not replace `ui-conversation`, mutate message rows, write session events, or touch `~/.dsh/sessions`.
 
-It can therefore coexist with `@khalilhsu/dsh-ui-conversation-folded`.
+It works with any conversation plugin that declares the `conversation.input.dock` slot, including the stock `ui-conversation` and `@khalilhsu/dsh-ui-conversation-folded`.
 
 ## Build
 
