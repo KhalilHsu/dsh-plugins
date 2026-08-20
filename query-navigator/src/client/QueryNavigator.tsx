@@ -7,6 +7,7 @@ import {
   activeQueryIndex, buildTurnMarkers, clampPreviewTop, queryPreviewFromData,
 } from './query-model.ts'
 import type { LoadedQuery, TurnMarker } from './query-model.ts'
+import type { QueryIndexProjection } from '../query-index.ts'
 
 const PACKAGE_ID = '@khalilhsu/dsh-ui-query-navigator'
 const QUERY_SELECTOR = '[data-chat-flow-kind="user"][data-chat-flow-key]'
@@ -106,6 +107,12 @@ const stylesheet = `
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
+.dsh-query-nav__preview-hint {
+  margin-top: 8px;
+  color: var(--dsw-alias-label-tertiary, #71717a);
+  font-size: 12px;
+  line-height: 18px;
+}
 @media (prefers-reduced-motion: reduce) {
   .dsh-query-nav__line { transition: none; }
 }
@@ -167,10 +174,13 @@ export function QueryNavigator({ session, useProjection, loadOlder }: QueryNavig
   const projectedStats = (useProjection as unknown as (
     key: string,
   ) => { readonly turns?: number } | undefined)('sessionStats')
+  const projectedIndex = (useProjection as unknown as (
+    key: string,
+  ) => QueryIndexProjection | undefined)('queryIndex')
   const loaded = useMemo(() => loadedQueries(session), [session.chat.nodes, session.chat.order])
   const markers = useMemo(
-    () => buildTurnMarkers(projectedStats?.turns ?? 0, loaded),
-    [loaded, projectedStats?.turns],
+    () => buildTurnMarkers(projectedStats?.turns ?? 0, loaded, projectedIndex?.items ?? []),
+    [loaded, projectedIndex?.items, projectedStats?.turns],
   )
 
   const [active, setActive] = useState(0)
@@ -329,7 +339,9 @@ export function QueryNavigator({ session, useProjection, loadOlder }: QueryNavig
                 aria-current={index === active ? 'step' : undefined}
                 aria-label={marker.preview === null
                   ? `定位 Turn ${marker.turn}，需要加载更早历史`
-                  : `跳转到 Turn ${marker.turn}：${marker.preview}`}
+                  : marker.key === null
+                    ? `加载并定位 Turn ${marker.turn}：${marker.preview}`
+                    : `跳转到 Turn ${marker.turn}：${marker.preview}`}
                 aria-busy={marker.turn === loadingTurn || undefined}
                 onClick={() => { void navigateToTurn(marker) }}
                 onPointerEnter={event => { showPreview(index, event.currentTarget) }}
@@ -359,6 +371,9 @@ export function QueryNavigator({ session, useProjection, loadOlder }: QueryNavig
                 ? '未能定位这个 Turn，请稍后重试'
                 : hoveredMarker.preview ?? '点击后加载到这个 Turn，并定位对应 Query'}
           </div>
+          {hoveredMarker.key === null && !hoveredLoading && (
+            <div className="dsh-query-nav__preview-hint">尚未加载 · 点击加载完整内容并定位</div>
+          )}
         </div>
       )}
     </>,

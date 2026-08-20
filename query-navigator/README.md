@@ -30,5 +30,5 @@ The built browser entry is `lib/client.js`; DSH serves that artifact through its
 
 ## Known limitations
 
-- The rail covers the full projected turn range. Unloaded turns render as lightweight anchors and load only the required older pages when clicked.
+- The Host projects an 80-character preview of the first human Query in every Turn; unloaded turns show that lightweight preview and load only the required older pages when clicked.
 - Query navigation relies on DSH's documented conversation scrollport and stable chat anchor attributes.

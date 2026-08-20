@@ -15,6 +15,11 @@ export interface TurnMarker {
   readonly preview: string | null
 }
 
+export interface IndexedQueryPreview {
+  readonly turn: number
+  readonly preview: string
+}
+
 /** Collapse transcript whitespace for a compact hover preview. */
 export function normalizeQueryText(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
@@ -53,8 +58,13 @@ export function activeQueryIndex(offsets: readonly (number | null)[], readingLin
 }
 
 /** Build a full-session turn rail while keeping unloaded turns lightweight. */
-export function buildTurnMarkers(totalTurns: number, loadedQueries: readonly LoadedQuery[]): TurnMarker[] {
+export function buildTurnMarkers(
+  totalTurns: number,
+  loadedQueries: readonly LoadedQuery[],
+  indexedQueries: readonly IndexedQueryPreview[] = [],
+): TurnMarker[] {
   const loadedByTurn = new Map<number, LoadedQuery>()
+  const indexedByTurn = new Map(indexedQueries.map(query => [query.turn, query.preview]))
   let highestLoadedTurn = 0
   for (const query of loadedQueries) {
     if (query.turn === null || !Number.isInteger(query.turn) || query.turn < 1) continue
@@ -62,14 +72,15 @@ export function buildTurnMarkers(totalTurns: number, loadedQueries: readonly Loa
     if (!loadedByTurn.has(query.turn)) loadedByTurn.set(query.turn, query)
   }
 
-  const highestTurn = Math.max(0, Math.floor(totalTurns), highestLoadedTurn)
+  const highestIndexedTurn = indexedQueries.reduce((highest, query) => Math.max(highest, query.turn), 0)
+  const highestTurn = Math.max(0, Math.floor(totalTurns), highestLoadedTurn, highestIndexedTurn)
   return Array.from({ length: highestTurn }, (_, index) => {
     const turn = index + 1
     const loaded = loadedByTurn.get(turn)
     return {
       turn,
       key: loaded?.key ?? null,
-      preview: loaded?.preview ?? null,
+      preview: loaded?.preview ?? indexedByTurn.get(turn) ?? null,
     }
   })
 }

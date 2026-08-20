@@ -51,3 +51,17 @@ test('uses the highest observed turn when the projection is absent or behind', (
   assert.equal(buildTurnMarkers(0, [{ key: 'turn-7', preview: '运行中', turn: 7 }]).length, 7)
   assert.equal(buildTurnMarkers(3, [{ key: 'turn-7', preview: '运行中', turn: 7 }]).length, 7)
 })
+
+test('uses lightweight indexed previews before a turn is loaded', () => {
+  assert.deepEqual(buildTurnMarkers(3, [
+    { key: 'turn-3', preview: '已加载正文', turn: 3 },
+  ], [
+    { turn: 1, preview: '第一轮摘要' },
+    { turn: 2, preview: '第二轮摘要' },
+    { turn: 3, preview: '索引摘要会被正文覆盖' },
+  ]), [
+    { turn: 1, key: null, preview: '第一轮摘要' },
+    { turn: 2, key: null, preview: '第二轮摘要' },
+    { turn: 3, key: 'turn-3', preview: '已加载正文' },
+  ])
+})
