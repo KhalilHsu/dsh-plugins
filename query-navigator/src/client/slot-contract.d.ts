@@ -1,5 +1,16 @@
 import type { ConversationSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
 
+interface QueryNavigatorConversation {
+  loadOlder(): Promise<void>
+}
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    /** Minimal public conversation face consumed by this standalone plugin. */
+    conversation: QueryNavigatorConversation
+  }
+}
+
 /**
  * Out-of-tree type mirror of the existing conversation input-dock currency.
  * The runtime declaration remains owned by ui-conversation; this file only

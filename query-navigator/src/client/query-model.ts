@@ -3,6 +3,18 @@ export interface QueryTextBlock {
   readonly text?: unknown
 }
 
+export interface LoadedQuery {
+  readonly key: string
+  readonly preview: string
+  readonly turn: number | null
+}
+
+export interface TurnMarker {
+  readonly turn: number
+  readonly key: string | null
+  readonly preview: string | null
+}
+
 /** Collapse transcript whitespace for a compact hover preview. */
 export function normalizeQueryText(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
@@ -31,12 +43,35 @@ export function queryPreviewFromData(data: unknown): string {
 
 /** Pick the last query that has crossed the reading line. */
 export function activeQueryIndex(offsets: readonly (number | null)[], readingLine: number): number {
-  let active = 0
+  const firstLoaded = offsets.findIndex(offset => offset !== null)
+  let active = firstLoaded < 0 ? 0 : firstLoaded
   for (let index = 0; index < offsets.length; index += 1) {
     const offset = offsets[index]
     if (offset !== null && offset <= readingLine) active = index
   }
   return active
+}
+
+/** Build a full-session turn rail while keeping unloaded turns lightweight. */
+export function buildTurnMarkers(totalTurns: number, loadedQueries: readonly LoadedQuery[]): TurnMarker[] {
+  const loadedByTurn = new Map<number, LoadedQuery>()
+  let highestLoadedTurn = 0
+  for (const query of loadedQueries) {
+    if (query.turn === null || !Number.isInteger(query.turn) || query.turn < 1) continue
+    highestLoadedTurn = Math.max(highestLoadedTurn, query.turn)
+    if (!loadedByTurn.has(query.turn)) loadedByTurn.set(query.turn, query)
+  }
+
+  const highestTurn = Math.max(0, Math.floor(totalTurns), highestLoadedTurn)
+  return Array.from({ length: highestTurn }, (_, index) => {
+    const turn = index + 1
+    const loaded = loadedByTurn.get(turn)
+    return {
+      turn,
+      key: loaded?.key ?? null,
+      preview: loaded?.preview ?? null,
+    }
+  })
 }
 
 /** Keep the hover card inside the viewport. */

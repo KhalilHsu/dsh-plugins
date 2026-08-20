@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
-  activeQueryIndex, clampPreviewTop, normalizeQueryText, queryPreviewFromData,
+  activeQueryIndex, buildTurnMarkers, clampPreviewTop, normalizeQueryText, queryPreviewFromData,
 } from '../src/client/query-model.ts'
 
 test('normalizes whitespace and extracts text plus image count', () => {
@@ -24,10 +24,30 @@ test('selects the last query that crossed the reading line', () => {
   assert.equal(activeQueryIndex([20, 120, 260], 119), 0)
   assert.equal(activeQueryIndex([20, 120, 260], 121), 1)
   assert.equal(activeQueryIndex([null, 120, 260], 300), 2)
+  assert.equal(activeQueryIndex([null, null, 260], 100), 2)
+  assert.equal(activeQueryIndex([null, null], 100), 0)
 })
 
 test('keeps hover cards inside the viewport', () => {
   assert.equal(clampPreviewTop(4, 800), 12)
   assert.equal(clampPreviewTop(780, 800), 672)
   assert.equal(clampPreviewTop(200, 800), 190)
+})
+
+test('builds placeholders for unloaded turns and hydrates loaded turns', () => {
+  assert.deepEqual(buildTurnMarkers(5, [
+    { key: 'turn-4', preview: '第四轮', turn: 4 },
+    { key: 'turn-5', preview: '第五轮', turn: 5 },
+  ]), [
+    { turn: 1, key: null, preview: null },
+    { turn: 2, key: null, preview: null },
+    { turn: 3, key: null, preview: null },
+    { turn: 4, key: 'turn-4', preview: '第四轮' },
+    { turn: 5, key: 'turn-5', preview: '第五轮' },
+  ])
+})
+
+test('uses the highest observed turn when the projection is absent or behind', () => {
+  assert.equal(buildTurnMarkers(0, [{ key: 'turn-7', preview: '运行中', turn: 7 }]).length, 7)
+  assert.equal(buildTurnMarkers(3, [{ key: 'turn-7', preview: '运行中', turn: 7 }]).length, 7)
 })
