@@ -1,7 +1,7 @@
 {
   "name": "@khalilhsu/dsh-ui-query-navigator",
   "description": "DSH web UI plugin that adds a Codex-style multi-turn query navigator without changing conversation or session data.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
