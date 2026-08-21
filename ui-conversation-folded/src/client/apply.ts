@@ -294,6 +294,7 @@ export function apply(ctx: Context): void {
     // access control, model right); empty until their owning plugins
     // register.
     children: {
+      'conversation.input.attachments': { kind: 'single', scope: 'session-maybe' },
       'conversation.input.plan': { kind: 'single', scope: 'session' },
       'conversation.input.model': { kind: 'single', scope: 'session' },
     },
@@ -393,6 +394,7 @@ export function apply(ctx: Context): void {
     locale: NS,
     children: {
       'conversation.chat.node': { kind: 'keyed', scope: 'session', inject: CHAT_NODE_INJECT },
+      'conversation.message.images': { kind: 'single', scope: 'session' },
     },
     store: chatStore,
     inject: (sessionId: SessionId, actions: BoundActions<typeof chatStore>): ChatViewInjected => {

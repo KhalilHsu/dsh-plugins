@@ -30,8 +30,41 @@ export interface ComposerAttachment {
   previewUrl: string
 }
 
+/** Input state handed to the optional attachment presentation plugin. */
+export interface ComposerAttachmentsOwnerProps {
+  /** Browser-owned draft images in input order. */
+  attachments: readonly ComposerAttachment[]
+  /** Whether a document-level file drop may add images now. */
+  canAcceptDrop: boolean
+  /** Add one dropped batch through the composer's validation path. */
+  onAddImages: (files: readonly File[]) => void
+  /** Remove one draft image through the conversation service. */
+  onRemoveImage: (id: DraftAttachmentId) => void
+  /** Display-ready limits for the drop invitation. */
+  dropLimits?: { readonly count: number; readonly size: string } | undefined
+}
+
+/** Historical image group handed to the optional attachment presentation plugin. */
+export interface MessageImagesOwnerProps {
+  /** Consecutive image blocks rendered as one gallery. */
+  images: readonly { readonly attachment: ImageAttachmentRef }[]
+  /** Session-authorized durable image loader. */
+  loadImage: (attachment: ImageAttachmentRef) => Promise<string>
+  /** Message-side alignment. */
+  align: 'start' | 'end'
+}
+
+/** Slot-backed renderer used by chat nodes without importing an attachment implementation. */
+export type RenderMessageImages = (owner: Omit<MessageImagesOwnerProps, 'loadImage'>) => ReactNode
+
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
+    /** Historical message-image gallery slot. */
+    'conversation.message.images': {
+      kind: 'single'
+      scope: 'session'
+      owner: MessageImagesOwnerProps
+    }
     /**
      * The entire body of one session: taking this seat means rendering that
      * session's conversation yourself. The occupant also owns the per-session
@@ -199,6 +232,12 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * command face through its own inject.
      */
     'conversation.composer.bar': { kind: 'single'; scope: 'session-maybe'; owner: ComposerBarOwnerProps }
+    /** Optional draft-image rail, drop target, and preview surface inside the composer. */
+    'conversation.input.attachments': {
+      kind: 'single'
+      scope: 'session-maybe'
+      owner: ComposerAttachmentsOwnerProps
+    }
     /**
      * The named plan-status seat in the composer tool row, immediately right
      * of the access-mode control — one occupant, so taking it means rendering
@@ -361,8 +400,7 @@ export interface ChatNodeOwnerProps {
   openFile: (path: string) => void
   inspectCall: (callId: CallId) => void
   forkAt: (seq: number) => void
-  /** Resolve a session-authorized historical image for inline display. */
-  loadImage: (attachment: ImageAttachmentRef) => Promise<string>
+  renderMessageImages: RenderMessageImages
   fileMentions: (owner: TurnTailOwnerProps) => MarkdownFileMentions | undefined
 }
 
@@ -544,7 +582,9 @@ export interface InputControlOwnerProps {
 /** Full composer-bar props: standard kit & owner share & control-seat render share & injected share (hooks bound) & locale seat. */
 export type ComposerBarProps =
   PropsRuntime<'conversation.composer.bar'>
-  & PropsRenderSlots<'conversation.input.plan' | 'conversation.input.model'>
+  & PropsRenderSlots<
+    'conversation.input.attachments' | 'conversation.input.plan' | 'conversation.input.model'
+  >
   & InjectFace<ComposerBarInjected>
   & PropsLocale<'conversation'>
 
@@ -709,7 +749,7 @@ export interface ChatViewInjected {
 
 /** Full chat-view component props: runtime & its Tool/command/tail render shares & store & injected & locale seat. */
 export type ChatViewSlotProps =
-  PropsRuntime<'conversation.view'> & PropsRenderSlots<'conversation.chat.node'>
+  PropsRuntime<'conversation.view'> & PropsRenderSlots<'conversation.chat.node' | 'conversation.message.images'>
   & PropsStore<ChatStore> & ChatViewInjected & PropsLocale<'conversation'>
 
 /**
@@ -724,6 +764,13 @@ export interface DetailsInjected {
 /** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */
 export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool'>
   & PropsStore<ChatStore> & DetailsInjected & PropsLocale<'conversation'>
+
+/** Full props of the attachment plugin's composer entry. */
+export type ComposerAttachmentsProps =
+  PropsRuntime<'conversation.input.attachments'> & PropsLocale<'conversation'>
+
+/** Full props of the attachment plugin's message-gallery entry. */
+export type MessageImagesProps = PropsRuntime<'conversation.message.images'> & PropsLocale<'conversation'>
 
 /** Owner share common to the hero / New-Session Workspace pickers. */
 export interface EmptyWorkspaceOwnerProps {

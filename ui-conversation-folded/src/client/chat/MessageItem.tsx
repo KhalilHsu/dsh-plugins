@@ -9,9 +9,7 @@ import type {
   ModelRetryNode, TurnErrorNode, UserMessageNode,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import { JsonBlock, MessageText, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { ChatNodeViewProps, ChatViewSlotProps } from '../contract/slots.ts'
-import { ImageGallery, type ImageLoader } from '@deepseek-ai/dsh-client-ui-attachment'
-import { messageImageLabels } from '../image-labels.ts'
+import type { ChatNodeOwnerProps, ChatNodeViewProps, ChatViewSlotProps } from '../contract/slots.ts'
 import { CompactionItem } from './CompactionItem.tsx'
 import { ContextInjectionRow } from './ContextInjectionRow.tsx'
 import { MessageIconActions } from './MessageIconActions.tsx'
@@ -177,10 +175,10 @@ function projectUserText(text: string): ReactNode {
 
 /** Right-aligned bubble shared by user and steering rows. */
 function UserStyleBubble({
-  content, imageLoader, actions, pending = false, t,
+  content, renderMessageImages, actions, pending = false, t,
 }: {
   content: readonly unknown[]
-  imageLoader: ImageLoader
+  renderMessageImages: ChatNodeOwnerProps['renderMessageImages']
   /** Optional IconActions (or similar) below the bubble; receives the joined text. */
   actions?: (text: string) => ReactNode
   /** Whether this is the Host-authoritative pre-admission steering projection. */
@@ -193,7 +191,7 @@ function UserStyleBubble({
   return (
     <div className={css.userRow} data-pending-steering={pending || undefined} data-time-hover-root>
       <div className={css.userStack}>
-        <ImageGallery images={images} load={imageLoader} align="end" labels={messageImageLabels(t)} />
+        {renderMessageImages({ images, align: 'end' })}
         {showBubble && <div className={css.bubble}>
           {projectUserText(text)}
           {rest.map((block, i) => <JsonBlock key={i} label={t('message.extraBlock')} payload={block} truncatedLabel={truncated} />)}
@@ -210,16 +208,15 @@ function UserStyleBubble({
  * @param props - Pending message content and conversation translator.
  * @returns the pending steering bubble.
  */
-export function PendingSteeringBubble({ content, loadImage, t }: {
+export function PendingSteeringBubble({ content, renderMessageImages, t }: {
   content: readonly unknown[]
-  loadImage?: ImageLoader
+  renderMessageImages: ChatNodeOwnerProps['renderMessageImages']
   t: ChatViewSlotProps['t']
 }): ReactNode {
-  const imageLoader = loadImage ?? (() => Promise.reject(new Error(t('image.serviceUnavailable'))))
   return (
     <UserStyleBubble
       content={content}
-      imageLoader={imageLoader}
+      renderMessageImages={renderMessageImages}
       pending
       t={t}
       actions={text => (
@@ -236,13 +233,13 @@ export function PendingSteeringBubble({ content, loadImage, t }: {
 
 /** User and admitted-steering keyed Chat renderer. */
 export const UserMessageNodeView = memo(function UserMessageNodeView({
-  node, loadImage, t,
+  node, renderMessageImages, t,
 }: ChatNodeViewProps<'user' | 'steering'>) {
   const data = node.data
   return (
     <UserStyleBubble
       content={data.content}
-      imageLoader={loadImage}
+      renderMessageImages={renderMessageImages}
       t={t}
       actions={text => (
         <MessageIconActions
