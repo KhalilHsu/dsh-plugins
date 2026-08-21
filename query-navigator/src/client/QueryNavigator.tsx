@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -8,6 +8,7 @@ import {
 } from './query-model.ts'
 import type { LoadedQuery, TurnMarker } from './query-model.ts'
 import type { QueryIndexProjection } from '../query-index.ts'
+import { isNavEnabled, subscribeNav } from './nav-store.ts'
 
 const PACKAGE_ID = '@khalilhsu/dsh-ui-query-navigator'
 const QUERY_SELECTOR = '[data-chat-flow-kind="user"][data-chat-flow-key]'
@@ -169,6 +170,7 @@ function nextPaint(): Promise<void> {
 
 /** Codex-style full-turn rail with on-demand paging for unloaded queries. */
 export function QueryNavigator({ session, useProjection, loadOlder }: QueryNavigatorProps) {
+  const enabled = useSyncExternalStore(subscribeNav, isNavEnabled)
   // sessionStats is a built-in DSH projection, but this standalone package
   // deliberately does not link the host-side domain package just for its type augmentation.
   const projectedStats = (useProjection as unknown as (
@@ -310,6 +312,9 @@ export function QueryNavigator({ session, useProjection, loadOlder }: QueryNavig
   const hoveredMarker = hovered === null ? undefined : markers[hovered]
   const hoveredLoading = hoveredMarker?.turn === loadingTurn
   const hoveredFailed = hoveredMarker?.turn === loadFailure
+
+  if (!enabled) return null
+
   return createPortal(
     <>
       <style data-plugin={PACKAGE_ID}>{stylesheet}</style>

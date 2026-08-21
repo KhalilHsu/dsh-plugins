@@ -12,11 +12,11 @@
 // ChatNodeSeat subscribes to one Node key, so Assistant deltas and Tool
 // lifecycle updates replace only their own row without remounting it.
 
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { ConversationTimelineSnapshot, ToolCallBlock } from '@deepseek-ai/dsh-client-runtime/client'
 import type { AssistantBlock } from '@deepseek-ai/dsh-client-runtime/client'
 import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { ChatViewSlotProps } from '../contract/slots.ts'
+import type { ChatViewSlotProps, RenderMessageImages } from '../contract/slots.ts'
 import type { AssistantChatData, ToolChatData, TurnTailChatData } from '../contract/chat-nodes.ts'
 import { PendingSteeringBubble } from './MessageItem.tsx'
 import { ChatNodeSeat } from './ChatNodeSeat.tsx'
@@ -204,6 +204,10 @@ export function ChatView({
   const pendingSteering = useMemo(
     () => inbox.filter(item => item.placement === 'steering'),
     [inbox],
+  )
+  const renderMessageImages = useCallback<RenderMessageImages>(
+    owner => renderSlot('conversation.message.images', { ...owner, loadImage }),
+    [loadImage, renderSlot],
   )
 
   // UI-only turn folding: the fold preference drives grouping, and the unit
@@ -620,7 +624,7 @@ export function ChatView({
                   openFile={openFile}
                   inspectCall={inspectCall}
                   forkAt={forkAt}
-                  loadImage={loadImage}
+                  renderMessageImages={renderMessageImages}
                   fileMentions={fileMentions}
                   renderSlot={renderSlot}
                   t={t}
@@ -644,7 +648,7 @@ export function ChatView({
                     openFile={openFile}
                     inspectCall={inspectCall}
                     forkAt={forkAt}
-                    loadImage={loadImage}
+                    renderMessageImages={renderMessageImages}
                     fileMentions={fileMentions}
                     renderSlot={renderSlot}
                     t={t}
@@ -659,7 +663,7 @@ export function ChatView({
                   data-chat-flow-key={slot.key}
                   data-chat-flow-kind="assistant-step"
                 >
-                  <AssistantMarkdown blocks={slot.blocks} streaming={slot.streaming} loadImage={loadImage} t={t} />
+                  <AssistantMarkdown blocks={slot.blocks} streaming={slot.streaming} renderMessageImages={renderMessageImages} t={t} />
                 </div>
               )
             }
@@ -673,7 +677,7 @@ export function ChatView({
                 openFile={openFile}
                 inspectCall={inspectCall}
                 forkAt={forkAt}
-                loadImage={loadImage}
+                renderMessageImages={renderMessageImages}
                 fileMentions={fileMentions}
                 renderSlot={renderSlot}
                 t={t}
@@ -697,6 +701,7 @@ export function ChatView({
                   <AssistantMarkdown
                     blocks={slot.unit.summaryThinking.blocks}
                     streaming={slot.unit.summaryThinking.streaming}
+                    renderMessageImages={renderMessageImages}
                     t={t}
                   />
                 )}
@@ -710,7 +715,7 @@ export function ChatView({
               wait, tool execution, streaming) so it never flickers per step. */}
           {running && <TurnStatus startTime={runningTurnStart} t={t} />}
           {pendingSteering.map(item => (
-            <PendingSteeringBubble key={item.id} content={item.content} loadImage={loadImage} t={t} />
+            <PendingSteeringBubble key={item.id} content={item.content} renderMessageImages={renderMessageImages} t={t} />
           ))}
         </div>
         {!atBottom && (

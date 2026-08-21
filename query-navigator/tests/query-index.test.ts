@@ -19,7 +19,7 @@ test('indexes only the first human query in each turn', () => {
   ]
   for (const item of events) state = queryIndexProjectionDefinition.apply(state, item)
 
-  assert.deepEqual(queryIndexProjectionDefinition.view(state), { items: [
+  assert.deepEqual(queryIndexProjectionDefinition.wire.view(state), { items: [
     { turn: 1, seq: 2, preview: 'first query' },
     { turn: 2, seq: 6, preview: 'second query' },
   ] })
