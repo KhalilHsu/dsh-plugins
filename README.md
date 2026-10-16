@@ -1,5 +1,12 @@
 # DSH Plugins
 
+> [!IMPORTANT]
+> **停止维护 / Maintenance ended — 2026-10-16**
+>
+> [DeepSeek Harness 官方](https://github.com/deepseek-ai/deepseek-harness)现已内置过程折叠与轮次导航，覆盖本仓库两个插件的核心功能。本仓库即日起停止更新和维护，不再适配新版 DSH 或发布新版本。请使用官方实现，以官方版本为准。下方文档保留作为历史参考，不建议在当前 DSH 中安装这些旧插件。
+>
+> DeepSeek Harness now includes native process folding and turn navigation, covering the core features of these plugins. This repository is no longer maintained and will receive no further compatibility updates or releases. Please use the official DSH implementation. The documentation below is retained for historical reference; these legacy plugins are not recommended for current DSH versions.
+
 [![npm version](https://img.shields.io/npm/v/@khalilhsu/dsh-ui-conversation-folded.svg)](https://www.npmjs.com/package/@khalilhsu/dsh-ui-conversation-folded)
 [![npm version](https://img.shields.io/npm/v/@khalilhsu/dsh-ui-query-navigator.svg)](https://www.npmjs.com/package/@khalilhsu/dsh-ui-query-navigator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -12,15 +19,15 @@ UI-only plugins for [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deep
 
 | Directory | Package | Status | What it does |
 |---|---|---|---|
-| [`ui-conversation-folded/`](./ui-conversation-folded) | [`@khalilhsu/dsh-ui-conversation-folded`](https://www.npmjs.com/package/@khalilhsu/dsh-ui-conversation-folded) | **Active** | **Per-turn folding for chat**: Each round's intermediate activity (thinking / CoT, tool calls, in-between narration) is neatly folded into a bounded 288px scroller. Final conclusion text and turn metrics stay outside and visible. Supports streaming auto-scroll, auto-collapse on summary, and global toggle. |
-| [`query-navigator/`](./query-navigator) | [`@khalilhsu/dsh-ui-query-navigator`](https://www.npmjs.com/package/@khalilhsu/dsh-ui-query-navigator) | **Active** | **Codex-style multi-turn query navigator**: A fixed left-rail with one marker per user query. Highlights the active turn on scroll, click to jump, hover to preview. Supports on-demand loading of unloaded older turns. Fully standalone — works with any conversation plugin. |
+| [`ui-conversation-folded/`](./ui-conversation-folded) | [`@khalilhsu/dsh-ui-conversation-folded`](https://www.npmjs.com/package/@khalilhsu/dsh-ui-conversation-folded) | **Maintenance ended** | **Per-turn folding for chat**: Each round's intermediate activity (thinking / CoT, tool calls, in-between narration) is neatly folded into a bounded 288px scroller. Final conclusion text and turn metrics stay outside and visible. Supports streaming auto-scroll, auto-collapse on summary, and global toggle. |
+| [`query-navigator/`](./query-navigator) | [`@khalilhsu/dsh-ui-query-navigator`](https://www.npmjs.com/package/@khalilhsu/dsh-ui-query-navigator) | **Maintenance ended** | **Codex-style multi-turn query navigator**: A fixed left-rail with one marker per user query. Highlights the active turn on scroll, click to jump, hover to preview. Supports on-demand loading of unloaded older turns. Fully standalone — works with any conversation plugin. |
 | `cot-fold/` | `@deepseek-ai/dsh-client-ui-cot-fold` | Archived | Early experiment: capped/collapsed reasoning ("Think") rows only. Superseded by `ui-conversation-folded`. |
 
 ---
 
 ## 🚀 Quick Start (Install & Uninstall)
 
-### Install via npm (Recommended)
+### Install via npm (Historical reference)
 
 Run from your DeepSeek Harness environment:
 
